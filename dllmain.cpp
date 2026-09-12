@@ -20,6 +20,10 @@ bool AttachVEH() {
 	return true;
 }
 bool DetachVEH() {
+	for (int i = 0; i < _sizeofAddresses; i++) {
+		if (_addresses[i].watched)
+			RemoveAddress(_addresses[i].addressToWatch);
+	}
 	int out = RemoveVectoredExceptionHandler(VectoredExceptionHandler);
 
 	if (out == 0)
@@ -119,18 +123,21 @@ long VectoredExceptionHandler(_EXCEPTION_POINTERS* ExceptionInfo) {
 
 
 	if (HRESULT_FROM_WIN32(ExceptionInfo->ExceptionRecord->ExceptionCode) == STATUS_GUARD_PAGE_VIOLATION) {
+		if(ExceptionInfo->ExceptionRecord->ExceptionInformation[1] == 0xffffffffffffffff)
+			return EXCEPTION_CONTINUE_SEARCH;
 		for (int i = 0; i < _sizeofAddresses; i++) {
-			if (_addresses[i].addressToWatch != 0 && ExceptionInfo->ExceptionRecord->ExceptionInformation[1] >= (unsigned long)_addresses[i].addressToWatch && ExceptionInfo->ExceptionRecord->ExceptionInformation[1] <= (unsigned long)_addresses[i].addressToWatch + _addresses[i].sizeOfType) {
-				_addresses[i].watched = false; //page needs to be reset
-				for (int i = 0; i < _sizeOfInfo; i++) {
-					if (!_accessInfo[i].inUse) {
-						_accessInfo[i].addressAccessed = ExceptionInfo->ExceptionRecord->ExceptionInformation[1];
-						RtlCaptureStackBackTrace(0, _framesToCapture, (void**)(_accessInfo[i].frameTrace), nullptr);
-						_accessInfo[i].inUse = true;
-						break;
+			if(_addresses->watched)
+				if (_addresses[i].addressToWatch != 0 && ExceptionInfo->ExceptionRecord->ExceptionInformation[1] >= (unsigned long)_addresses[i].addressToWatch && ExceptionInfo->ExceptionRecord->ExceptionInformation[1] <= (unsigned long)_addresses[i].addressToWatch + _addresses[i].sizeOfType) {
+					_addresses[i].watched = false; //page needs to be reset
+					for (int i = 0; i < _sizeOfInfo; i++) {
+						if (!_accessInfo[i].inUse) {
+							_accessInfo[i].addressAccessed = ExceptionInfo->ExceptionRecord->ExceptionInformation[1];
+							RtlCaptureStackBackTrace(0, _framesToCapture, (void**)(_accessInfo[i].frameTrace), nullptr);
+							_accessInfo[i].inUse = true;
+							break;
+						}
 					}
 				}
-			}
 		}
 
 		ExceptionInfo->ContextRecord->ContextFlags |= CONTEXT_CONTROL;
