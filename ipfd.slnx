@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="ipfd.vcxproj" Id="8c8993de-20b8-4339-a240-ec0ed97ad04c" />
+</Solution>
