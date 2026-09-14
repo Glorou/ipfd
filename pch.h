@@ -12,4 +12,5 @@
 #include <errhandlingapi.h>
 #include <memoryapi.h>
 #include <winerror.h>
+#include <intrin.h>
 #endif //PCH_H
