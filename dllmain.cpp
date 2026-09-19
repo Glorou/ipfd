@@ -128,15 +128,10 @@ bool RemoveGuardPage(unsigned __int64 Address) {
 
 static long CALLBACK VectoredExceptionHandler(PEXCEPTION_POINTERS ExceptionInfo) {
 	if (_unhook) {
-		constexpr uint64_t DR0_MASK = 0x000F0003ull;
-		constexpr uint64_t DR1_MASK = 0x00F0000Cull;
-		constexpr uint64_t DR2_MASK = 0x0F000030ull;
-		constexpr uint64_t DR3_MASK = 0xF00000C0ull;
-		uint64_t newBits = DR0_MASK | DR1_MASK | DR2_MASK | DR3_MASK;
 
-		ExceptionInfo->ContextRecord->Dr0 = ExceptionInfo->ContextRecord->Dr1 = ExceptionInfo->ContextRecord->Dr2 = ExceptionInfo->ContextRecord->Dr3 =  0;
+		ExceptionInfo->ContextRecord->Dr0 = ExceptionInfo->ContextRecord->Dr1 = ExceptionInfo->ContextRecord->Dr2 = ExceptionInfo->ContextRecord->Dr3 = 0;
 
-		ExceptionInfo->ContextRecord->Dr7 = ~newBits;
+		ExceptionInfo->ContextRecord->Dr7 = ~0x00000000dddd0455;
 		return EXCEPTION_CONTINUE_EXECUTION;
 	}
 	if (ExceptionInfo->ExceptionRecord->ExceptionCode == STATUS_BREAKPOINT || ExceptionInfo->ExceptionRecord->ExceptionCode == STATUS_SINGLE_STEP) {
